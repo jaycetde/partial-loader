@@ -10,20 +10,28 @@ function Partial(el, options) {
 
 Partial.prototype.get = function (url, callback) {
     var self = this
+      , el = self._el
       , noCache = self.options.noCache
       , cache = self._cache
     ;
     
     if (!noCache && cache[url]) {
-        self._el.innerHTML = cache[url];
-        return callback(null, cache[url]);
+        if (el) {
+            el.innerHTML = cache[url];
+        }
+        return callback && callback(null, cache[url]);
     }
     
     request.get(url, function (err, res) {
         if (!err) {
-            self._el.innerHTML = cache[url] = res.text;
+            if (!noCache) {
+                cache[url] = res.text;
+            }
+            if (el) {
+                el.innerHTML = res.text;
+            }
         }
-        callback(err, res.text);
+        callback && callback(err, res.text);
     });
 };
 
@@ -40,3 +48,5 @@ Partial.prototype.page = function (url) {
         });
     };
 };
+
+module.exports = Partial;
